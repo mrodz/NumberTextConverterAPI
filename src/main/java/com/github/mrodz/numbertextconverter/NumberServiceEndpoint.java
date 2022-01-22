@@ -5,7 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.*;
@@ -22,68 +27,48 @@ public class NumberServiceEndpoint {
             this.result = getStringRepresentationOfNumber(number);
         }
 
-        HashMap<Integer, String> decimalNumberToStringMapping = new HashMap<>();
+        public static final HashMap<Integer, String> decimalNumberToStringMapping = new HashMap<>();
 
-        {
-            decimalNumberToStringMapping.put(0, "zero");
-            decimalNumberToStringMapping.put(1, "one");
-            decimalNumberToStringMapping.put(2, "two");
-            decimalNumberToStringMapping.put(3, "three");
-            decimalNumberToStringMapping.put(4, "four");
-            decimalNumberToStringMapping.put(5, "five");
-            decimalNumberToStringMapping.put(6, "six");
-            decimalNumberToStringMapping.put(7, "seven");
-            decimalNumberToStringMapping.put(8, "eight");
-            decimalNumberToStringMapping.put(9, "nine");
-            decimalNumberToStringMapping.put(10, "ten");
-            decimalNumberToStringMapping.put(11, "eleven");
-            decimalNumberToStringMapping.put(12, "twelve");
-            decimalNumberToStringMapping.put(13, "thirteen");
-            decimalNumberToStringMapping.put(14, "fourteen");
-            decimalNumberToStringMapping.put(15, "fifteen");
-            decimalNumberToStringMapping.put(16, "sixteen");
-            decimalNumberToStringMapping.put(17, "seventeen");
-            decimalNumberToStringMapping.put(18, "eighteen");
-            decimalNumberToStringMapping.put(19, "nineteen");
-            decimalNumberToStringMapping.put(20, "twenty");
-            decimalNumberToStringMapping.put(30, "thirty");
-            decimalNumberToStringMapping.put(40, "forty");
-            decimalNumberToStringMapping.put(50, "fifty");
-            decimalNumberToStringMapping.put(60, "sixty");
-            decimalNumberToStringMapping.put(70, "seventy");
-            decimalNumberToStringMapping.put(80, "eighty");
-            decimalNumberToStringMapping.put(90, "ninety");
-        }
+        public static final TreeMap<BigInteger, String> powersToStringMapping = new TreeMap<>();
 
-        TreeMap<BigInteger, String> powersToStringMapping = new TreeMap<>();
+        static {
+            try {
+                Yaml yaml = new Yaml();
+                File yamlMapping = new File("./number-mapping.yaml");
+                InputStream inputStream = new FileInputStream(yamlMapping);
+                Map<String, Object> obj = yaml.load(inputStream);
 
-        {
-            powersToStringMapping.put(BigInteger.ONE, "");
-            powersToStringMapping.put(BigInteger.TEN, "");
-            powersToStringMapping.put(BigInteger.TEN.pow(2), "hundred");
-            powersToStringMapping.put(BigInteger.TEN.pow(3), "thousand");
-            powersToStringMapping.put(BigInteger.TEN.pow(6), "million");
-            powersToStringMapping.put(BigInteger.TEN.pow(9), "billion");
-            powersToStringMapping.put(BigInteger.TEN.pow(12), "trillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(15), "quadrillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(18), "quintillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(21), "sextillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(24), "septillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(27), "octillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(30), "nonillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(33), "decillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(36), "undecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(39), "duodecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(42), "tredecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(45), "quattuordecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(48), "quindecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(51), "sexdecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(54), "septendecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(57), "octodecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(60), "novemdecillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(63), "vigintillion");
-            powersToStringMapping.put(BigInteger.TEN.pow(100), "googol");
-            powersToStringMapping.put(BigInteger.TEN.pow(303), "centillion");
+                powersToStringMapping.put(BigInteger.ONE, "");
+                powersToStringMapping.put(BigInteger.TEN, "");
+
+                @SuppressWarnings("unchecked")
+                List<Object> powerMappings = (List<Object>) obj.get("number-text-power-mappings");
+
+                for (Object o : powerMappings) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> keyValuePair = (Map<String, Object>) o;
+
+                    Integer pow = (Integer) keyValuePair.get("pow");
+                    String str = (String) keyValuePair.get("str");
+
+                    powersToStringMapping.put(BigInteger.TEN.pow(pow), str);
+                }
+
+                @SuppressWarnings("unchecked")
+                List<Object> specialMappings = (List<Object>) obj.get("number-text-special-mappings");
+
+                for (Object o : specialMappings) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> keyValuePair = (Map<String, Object>) o;
+
+                    Integer key = (Integer) keyValuePair.get("key");
+                    String str = (String) keyValuePair.get("str");
+
+                    decimalNumberToStringMapping.put(key, str);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         private String getStringRepresentationOfSmallNumber(BigInteger number) {
@@ -118,8 +103,6 @@ public class NumberServiceEndpoint {
 
             segments = new ArrayList(Arrays.asList(reverseArray(segments.toArray())));
 
-            System.out.println("segments = " + segments);
-
             ArrayList<String> result = new ArrayList<>();
 
             Map.Entry[] arrayOfPowers = powersToStringMapping.entrySet().toArray(new Map.Entry[0]);
@@ -128,9 +111,6 @@ public class NumberServiceEndpoint {
                 if (!(c < segments.size() && i >= 0)) break; // make loop declaration smaller
 
                 String forThisGrouping = getStringRepresentationOfSmallNumber(new BigInteger(segments.get(c).toString()));
-
-                System.out.println("forThisGrouping = " + forThisGrouping);
-                System.out.println("arrayOfPowers = " + arrayOfPowers[i]);
 
                 if (!forThisGrouping.isEmpty()) {
                     result.add(String.format("%s%s", forThisGrouping, arrayOfPowers[i].getValue()
@@ -216,10 +196,12 @@ public class NumberServiceEndpoint {
                     .subtract(number.mod(target))).divide(target)).intValue();
         }
 
+        @SuppressWarnings("unused")
         public BigInteger getNumber() {
             return number;
         }
 
+        @SuppressWarnings("unused")
         public String getResult() {
             return result == null ? "error" : result;
         }
@@ -244,14 +226,14 @@ public class NumberServiceEndpoint {
             return new ResponseEntity<>(new NumberFormatException(e.getMessage()) {
                 @Override
                 public StackTraceElement[] getStackTrace() {
-                    return new StackTraceElement[] { super.getStackTrace()[0] };
+                    return new StackTraceElement[] { e.getStackTrace()[0] };
                 }
             }, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(new Exception(e.getMessage()) {
                 @Override
                 public StackTraceElement[] getStackTrace() {
-                    return new StackTraceElement[] { super.getStackTrace()[0] };
+                    return new StackTraceElement[] { e.getStackTrace()[0] };
                 }
             }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
