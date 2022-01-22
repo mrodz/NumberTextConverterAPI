@@ -1,6 +1,8 @@
 package com.github.mrodz.numbertextconverter;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static com.github.mrodz.numbertextconverter.NumberServiceEndpoint.*;
 
@@ -9,12 +11,12 @@ class NumberServiceEndpointTest {
 
     @Test
     public void crash1() {
-        assertThrows(NumberFormatException.class, () -> n.getConversion("1.5"));
+        assertEquals(HttpStatus.BAD_REQUEST, n.getConversion("1.5").getStatusCode());
     }
 
     @Test
     public void crash2() {
-        assertThrows(NumberFormatException.class, () -> n.getConversion("This is Not a Number"));
+        assertEquals(HttpStatus.BAD_REQUEST, n.getConversion("This is Not a Number").getStatusCode());
     }
 
     @Test
