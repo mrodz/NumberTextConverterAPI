@@ -1,5 +1,7 @@
 package com.github.mrodz.numbertextconverter;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -219,7 +221,7 @@ public class NumberServiceEndpoint {
         }
 
         public String getResult() {
-            return result;
+            return result == null ? "error" : result;
         }
 
         @Override
@@ -232,8 +234,26 @@ public class NumberServiceEndpoint {
     }
 
     @GetMapping("/number-text/{number}")
-    public ConvertedNumber getConversion(@PathVariable String number) {
-        BigInteger bigInteger = new BigInteger(number);
-        return new ConvertedNumber(bigInteger);
+    public ResponseEntity<?> getConversion(@PathVariable String number) {
+        BigInteger bigInteger;
+        try {
+            bigInteger = new BigInteger(number);
+            ConvertedNumber result = new ConvertedNumber(bigInteger);
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (NumberFormatException e) {
+            return new ResponseEntity<>(new NumberFormatException(e.getMessage()) {
+                @Override
+                public StackTraceElement[] getStackTrace() {
+                    return new StackTraceElement[] { super.getStackTrace()[0] };
+                }
+            }, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new Exception(e.getMessage()) {
+                @Override
+                public StackTraceElement[] getStackTrace() {
+                    return new StackTraceElement[] { super.getStackTrace()[0] };
+                }
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
