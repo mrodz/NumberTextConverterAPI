@@ -36,7 +36,7 @@ number-text-power-mappings:
   - { pow: 93, str: 'trigintillion' }
   - { pow: 96, str: 'untrigintillion' }
   - { pow: 99, str: 'duotrigintillion' }
-  - { pow: 102, str: 'tretrigintillion' }
+  - { pow: 102, str: 'trestrigintillion' }
   - { pow: 105, str: 'quattuortrigintillion' }
   - { pow: 108, str: 'quintrigintillion' }
   - { pow: 111, str: 'sextrigintillion' }
