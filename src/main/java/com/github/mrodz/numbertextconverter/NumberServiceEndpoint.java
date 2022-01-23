@@ -34,7 +34,7 @@ public class NumberServiceEndpoint {
         static {
             try {
                 Yaml yaml = new Yaml();
-                File yamlMapping = new File("./number-mapping.yaml");
+                File yamlMapping = new File("number-mapping.yaml");
                 InputStream inputStream = new FileInputStream(yamlMapping);
                 Map<String, Object> obj = yaml.load(inputStream);
 
