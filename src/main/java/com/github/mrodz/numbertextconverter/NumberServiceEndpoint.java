@@ -243,11 +243,14 @@ public class NumberServiceEndpoint {
          * @param target a multiple of 10. (1, 10, 100, 1000, 10000, etc.)
          * @return the digit at a specified number's place value.
          * @see #getStringRepresentationOfSmallNumber(BigInteger)
+         * @deprecated - there is bound to be a more efficient way to do this.
          */
+        @Deprecated
         public static int getNumberAtDecimalPlace(final BigInteger number, BigInteger target) {
             if (String.valueOf(target).length() > String.valueOf(number).length()) {
                 throw new IllegalArgumentException("Place value is too large");
             }
+            return number.
             return ((number.subtract((number.subtract(number.mod(target.multiply(BigInteger.TEN)))))
                     .subtract(number.mod(target))).divide(target)).intValue();
         }
